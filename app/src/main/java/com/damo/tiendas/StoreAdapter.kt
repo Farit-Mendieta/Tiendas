@@ -7,16 +7,28 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.damo.tiendas.databinding.ItemStoreBinding
 
-class StoreAdapter(private var stores: MutableList<Store>, private var listener: OnClickListener): RecyclerView.Adapter<StoreAdapter.ViewHolder>() {
+class StoreAdapter(private var stores: MutableList<StoreEntity>, private var listener: OnClickListener): RecyclerView.Adapter<StoreAdapter.ViewHolder>() {
 
     private lateinit var nContext : Context
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view){
         val binding = ItemStoreBinding.bind(view)
 
-        fun setListener(store:Store){
-            binding.root.setOnClickListener { listener.onClick(store) }
+        fun setListener(storeEntity:StoreEntity){
+            with(binding.root){
+                setOnClickListener { listener.onClick(storeEntity) }
+
+                setOnClickListener {
+                    listener.onDeleteStore(storeEntity)
+                    true
+                }
+            }
+
+            binding.cbFavorito.setOnClickListener {
+                listener.onFavoriteStore(storeEntity)
+            }
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -35,11 +47,33 @@ class StoreAdapter(private var stores: MutableList<Store>, private var listener:
         with(holder){
             setListener(store)
             binding.tvNombreTienda.text = store.name
+            binding.cbFavorito.isChecked = store.isFavorite
         }
     }
 
-    fun add(store: Store){
-        stores.add(store)
+    fun add(storeEntity: StoreEntity){
+        stores.add(storeEntity)
         notifyDataSetChanged()
+    }
+
+    fun setStores(stores: MutableList<StoreEntity>) {
+        this.stores = stores
+        notifyDataSetChanged()
+    }
+
+    fun update(storeEntity: StoreEntity){
+        val index = stores.indexOf(storeEntity)
+        if(index != -1){
+            stores.set(index, storeEntity)
+            notifyItemChanged(index)
+        }
+    }
+
+    fun delete(storeEntity: StoreEntity){
+        val index = stores.indexOf(storeEntity)
+        if(index != -1){
+            stores.removeAt(index)
+            notifyItemRemoved(index)
+        }
     }
 }
